@@ -1,13 +1,9 @@
 import json
 import os
 import sys
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 import argparse
-
-if int(tf.__version__[0]) > 1:
-    from model import HParams as HParams
-else:
-    from tensorflow.contrib.training import HParams
+from tensorflow.contrib.training import HParams
 
 import model
 from encode_bpe import BPEEncoder_ja
@@ -52,20 +48,16 @@ parser.add_argument('--exclude-end', action='store_true')
 parser.add_argument('--gpu', type=str, default='0')
 args = parser.parse_args()
 
-with open('ja-bpe.txt', encoding='utf-8') as f:
+with open('ja-bpe.txt') as f:
     bpe = f.read().split('\n')
 
-with open('emoji.json', encoding='utf-8') as f:
+with open('emoji.json') as f:
     emoji = json.loads(f.read())
 
 enc = BPEEncoder_ja(bpe, emoji)
 n_vocab = len(enc)
 
-if os.path.isfile(args.model+'/hparams.json'):
-    with open(args.model+'/hparams.json', encoding='utf-8') as f:
-        params = json.loads(f.read())
-        hparams = HParams(**params)
-elif 'small' in args.model:
+if 'small' in args.model:
     hparams = HParams(**{
       "n_vocab": n_vocab,
       "n_ctx": 1024,

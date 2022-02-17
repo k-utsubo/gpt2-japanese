@@ -102,9 +102,9 @@ if __name__=='__main__':
     parser.add_argument("--combine", help="Concatenate files with <|endoftext|> separator into chunks of this minimum size", type=int, default=50000 )
     args = parser.parse_args()
 
-    with open('ja-bpe.txt', encoding='utf-8') as f:
+    with open('ja-bpe.txt') as f:
         bpe = f.read().split('\n')
-    with open('emoji.json', encoding='utf-8') as f:
+    with open('emoji.json') as f:
         emoji = json.loads(f.read())
     enc = BPEEncoder_ja(bpe, emoji)
 
@@ -119,7 +119,7 @@ if __name__=='__main__':
             for file in tqdm(files):
                 if file.endswith(".txt"):
                     input = os.path.join(curDir, file)
-                    with open(input, 'r', encoding='utf-8') as fp:
+                    with open(input, 'r') as fp:
                         raw_text += fp.read()
                     raw_text += '<|endoftext|>'
                     if len(raw_text) >= args.combine:

@@ -4,17 +4,13 @@ import argparse
 import json
 import os
 import numpy as np
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 import time
 import tqdm
 from copy import copy
+from tensorflow.contrib.training import HParams
 from encode_bpe import BPEEncoder_ja
 import model
-
-if int(tf.__version__[0]) > 1:
-    from model import HParams as HParams
-else:
-    from tensorflow.contrib.training import HParams
 
 CHECKPOINT_DIR = 'checkpoint'
 SAMPLE_DIR = 'samples'
@@ -31,7 +27,7 @@ parser.add_argument('--optim', type=str, default='adam', help='"adam", "adagrad"
 parser.add_argument('--learning_rate', metavar='LR', type=float, default=5e-5, help='Learning rate for optimizer')
 parser.add_argument('--warmup_steps', metavar='WR', type=int, default=0, help='Learning rate warming up steps')
 
-parser.add_argument('--run_name', type=str, default='gpt2ja_finetune', help='Run id. Name of subdirectory in checkpoint/')
+parser.add_argument('--run_name', type=str, default='gpt2ja_finetune', help='Run id. Name of subdirectory in checkpoint/ and samples/')
 parser.add_argument('--save_every', metavar='N', type=int, default=1000, help='Write a checkpoint every N steps')
 
 parser.add_argument('--gpu', default='0', help='visible gpu number.')
@@ -42,10 +38,10 @@ def maketree(path):
     except:
         pass
 
-with open('ja-bpe.txt', encoding='utf-8') as f:
+with open('ja-bpe.txt') as f:
     bpe = f.read().split('\n')
 
-with open('emoji.json', encoding='utf-8') as f:
+with open('emoji.json') as f:
     emoji = json.loads(f.read())
 
 enc = BPEEncoder_ja(bpe, emoji)
@@ -54,11 +50,7 @@ n_vocab = len(enc)
 def main():
     args = parser.parse_args()
 
-    if os.path.isfile(args.base_model+'/hparams.json'):
-        with open(args.base_model+'/hparams.json', encoding='utf-8') as f:
-            params = json.loads(f.read())
-            hparams = HParams(**params)
-    elif 'small' in args.base_model:
+    if 'small' in args.base_model:
         hparams = HParams(**{
           "n_vocab": n_vocab,
           "n_ctx": 1024,
@@ -151,13 +143,10 @@ def main():
                 token_chunk = npz[item]
                 current_token = []
                 for ind in range(0,len(token_chunk)):
-                    current_token.append(np.uint16(token_chunk[ind]))
-                    if len(current_token) == hparams.n_ctx:
-                        global_chunks.append(current_token)
-                        current_token = []
-                if len(current_token) > 1:
-                    global_chunks.append(current_token)
-                    current_token = []
+                  current_token.append(np.uint16(token_chunk[ind]))
+                  if len(current_token) == hparams.n_ctx:
+                      global_chunks.append(current_token)
+                      current_token = []
         global_chunk_index = np.random.permutation(len(global_chunks))
         global_chunk_step = 0
         print('Training...')
@@ -181,11 +170,10 @@ def main():
 
         counter = 1
         counter_path = os.path.join(CHECKPOINT_DIR, args.run_name, 'counter')
-        hparams_path = os.path.join(CHECKPOINT_DIR, args.run_name, 'hparams.json')
         if os.path.exists(counter_path):
             # Load the step number if we're resuming a run
             # Add 1 so we don't immediately try to save again
-            with open(counter_path, 'r', encoding='utf-8') as fp:
+            with open(counter_path, 'r') as fp:
                 counter = int(fp.read()) + 1
 
         maketree(os.path.join(CHECKPOINT_DIR, args.run_name))
@@ -200,16 +188,8 @@ def main():
                 sess,
                 os.path.join(CHECKPOINT_DIR, args.run_name, 'model'),
                 global_step=counter)
-            with open(counter_path, 'w', encoding='utf-8') as fp:
+            with open(counter_path, 'w') as fp:
                 fp.write(str(counter) + '\n')
-            with open(hparams_path, 'w', encoding='utf-8') as fp:
-                fp.write(json.dumps({
-                      "n_vocab": int(hparams.n_vocab),
-                      "n_ctx": int(hparams.n_ctx),
-                      "n_embd": int(hparams.n_embd),
-                      "n_head": int(hparams.n_head),
-                      "n_layer": int(hparams.n_layer),
-                }))
 
         avg_loss = (0.0, 0.0)
         start_time = time.time()

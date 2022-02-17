@@ -9,12 +9,12 @@ Japanese GPT2 Generation Model
 
 ***<font color='red'>New</font>***
 
+- [正式版のモデルを公開しました](report/models.md)
 - [デモンストレーションサイトを作成しました](http://ailab.nama.ne.jp/#gpt2ja)
 - [GitHub Sponserによるスポンサーシップを開始しました](https://github.com/sponsors/tanreinama)
 - [ファインチューニング用のコードを公開しました](run_finetune.py)
-- [Largeモデルを公開しました](report/models.md)
 
-  
+
 
 ## GPT2に日本語コーパスを学習させたものです
 
@@ -34,14 +34,10 @@ Japanese GPT2 Generation Model
 
 [Sakamoto's AI lab](http://ailab.nama.ne.jp/#gpt2ja)
 
-### 関連プロジェクト
-
-[text2text-japanese](https://github.com/tanreinama/text2text-japanese)
-
 ### TODO
 
 ✓大規模コーパスの作成（2020/8/20）<br>✓日本語版BPEEncoder作成（2020/9/15）<br>
-✓mediumモデルの公開（2020/11/07）<br>✓smallモデルの公開（2020/12/24）<br>✓largeモデルの公開（2021/3/13）<br>
+✓mediumモデルの公開（2020/11/07）<br>✓smallモデルの公開（2020/12/24）<br>□largeモデルの公開（2021/3予定）<br>
 
 ## 使い方
 
@@ -61,7 +57,7 @@ $ wget https://www.nama.ne.jp/models/gpt2ja-medium.tar.bz2
 $ tar xvfj gpt2ja-medium.tar.bz2
 ```
 
-モデルを指定して実行します。Tensorflow 1.x/2.x両方で動作します
+モデルを指定して実行します
 
 ```sh
 $ python3 gpt2-generate.py --model gpt2ja-medium --num_generate 1
@@ -100,7 +96,7 @@ AIではこのような画面が作れます。
 
 - contextを指定すると、それに続く文章が出てきます
 
-- 長めのcontextを指定する方が、続く文章も自然な文章になる傾向があるようです
+- 長めのcontetを指定する方が、続く文章も自然な文章になる傾向があるようです
 
 
 ```sh
@@ -123,16 +119,6 @@ $ python3 gpt2-generate.py --context="俺の名前は坂本俊之。何処にで
 ```
 
 - ウェブ小説っぽい文章も生成出来ます。
-
-  
-
-```sh
-$ python3 gpt2-generate.py --min_length 512 --max_length 1024
-```
-
-- 「min_length」と「max_length」で生成する文章の長さを指定出来ます。「min_length」は1024までです。
-
-  
 
 ### 文章ベクトル生成
 
@@ -196,7 +182,7 @@ $ cd ..
 「--base_model」に元のプレトレーニング済みモデルを「--dataset 」にエンコードしたファイルを指定して、「run_finetune.py」を起動します。
 
 ```sh
-$ python run_finetune.py --base_model gpt2ja-medium --dataset finetune.npz --run_name gpr2ja-finetune_run1
+$ python run_finetune.py --base_model gpr2ja-medium --dataset finetune.npz --run_name gpr2ja-finetune_run1
 ```
 
 学習したモデルは、「checkpoint」以下の「--run_name」で指定したディレクトリ内に保存されます。
